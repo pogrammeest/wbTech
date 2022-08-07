@@ -1,0 +1,13 @@
+{% extends 'base.html' %} &nbsp;
+{% block content %}
+    <div class="ui tablet computer only padded grid">
+        <div class="ui center container">
+            <h2>Sign up</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Sign up</button>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

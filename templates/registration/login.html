@@ -1,0 +1,16 @@
+{% extends 'base.html' %} &nbsp;
+{% block content %}
+    <div class="ui tablet computer only padded grid">
+        <div class="ui left aligned text container">
+            <h2>Log In</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    </div>
+{% endblock content %}
+
+
+

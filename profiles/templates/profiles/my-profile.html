@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    my user
+{% endblock title %}
+
+{% block head %}
+    {{ form.media }}
+
+{% endblock head %}
+{% block content %}
+
+    <!-- MODAL -->
+    <div class="ui modal mymodal">
+        <i class="close icon"></i>
+        <div class="header">
+            Update your Profile
+        </div>
+        <div class="image content">
+            <div class="ui medium image">
+                {% load cropping %}
+                <img src="{% cropped_thumbnail user "cropping" %}">
+            </div>
+            <div class="description">
+
+                <div class="ui header">Provide some additional/newest info about you</div>
+                <form action="" method="POST" class="ui form" enctype='multipart/form-data'>
+                    {% csrf_token %}
+                    {{ form }}
+                <button type='submit' class="ui positive right labeled icon button" style="margin-top: 1rem">
+                Update
+                <i class="checkmark icon"></i>
+            </button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="ui segment">
+        {% if updated %}
+            <div class="ui green message">Your user has been updated</div>
+        {% endif %}
+        <div class="ui grid">
+            <div class='row'>
+                <div class='six wide column'>
+
+
+                    <img class="ui medium rounded image" src={% cropped_thumbnail user "cropping" %}>
+                    <div class="row mt-5">
+                        <button class='ui secondary button' id='modal-btn'>Update your user</button>
+                    </div>
+                </div>
+                <div class="ten wide column">
+                    <table class="ui table">
+                        <tbody>
+                        <tr>
+                            <td>username</td>
+                            <td>{{ user }}</td>
+                        </tr>
+                         <tr>
+                            <td>slug</td>
+                            <td>{{ user.slug }}</td>
+                        </tr>
+                        <tr>
+                            <td>first name</td>
+                            <td>{{ user.first_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>last name</td>
+                            <td>{{ user.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>bio</td>
+                            <td>{{ user.bio }}</td>
+                        </tr>
+                        <tr>
+                            <td>Number of subscriptions</td>
+                            <td>{{ user.get_subscriptions_cnt }}</td>
+                        </tr>
+                        <tr>
+                            <td>All my subscriptions</td>
+                            <td>
+                                <ul class="no-padding">
+                                    {% for sub in user.get_subscriptions %}
+                                        <a href="{% url 'profiles:profile-detail' sub.slug %}"><li>{{ sub }}</li></a>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Number of subscribers</td>
+                            <td>{{ user.get_subs_cnt }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>All my subscribers</td>
+                            <td>
+                                <ul class="no-padding">
+                                    {% for sub in user.get_subs %}
+
+                                         <a href="{% url 'profiles:profile-detail' sub.slug %}"><li>{{ sub }}</li></a>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>number of posts</td>
+                            <td>{{ user.get_all_authors_posts }}</td>
+                        </tr>
+                        <tr>
+                            <td>number of likes given</td>
+                            <td>{{ user.get_likes_given_no }}</td>
+                        </tr>
+                        <tr>
+                            <td>number of likes received</td>
+                            <td>{{ user.get_likes_recieved_no }}</td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+
+
+            </div>
+            <div class="sixteen wide column">
+            <div class="center aligned text container">
+                    <h2>Posts:
+                    </h2>
+
+                    {% if user.get_posts_cnt %}
+                     <div class="ui center aligned text container cards">
+                        {% for post in user.get_posts %}
+                              <div class="card">
+                                <div class="content">
+                                  <div class="header">{{ post.title }}</div>
+                                </div>
+                                <a href="{% url 'posts:post-detail' post.pk %}" class="ui bottom attached button">
+                                  <i class="linkify icon"></i>
+                                 View post
+                                </a>
+                              </div>
+                        {% endfor %}
+                         </div>
+                    {% else %}
+                        <h1>No posts of this user ...</h1>
+                    {% endif %}
+
+                    </div>
+                </div>
+                </div>
+        </div>
+
+
+
+
+    </div>
+
+
+{% endblock content %}

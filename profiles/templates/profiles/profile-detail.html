@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    profile detail
+{% endblock title %}
+
+{% block content %}
+    <div class="ui grid">
+        <br>
+        <div class="row">
+            <div class="four wide column">
+                {% load cropping %}
+
+                <img class="ui medium rounded image" src="{% cropped_thumbnail profile "cropping" %}">
+                <h1>{{ profile.get_full_name }}</h1>
+                <div class="ui vertical fluid menu">
+                    <div class="item">
+                        Posts
+                        <div class="ui label">{{ profile.get_posts_cnt }}</div>
+                    </div>
+                    <div class="item">
+                        Likes given
+                        <div class="ui label">{{ profile.get_likes_given_no }}</div>
+                    </div>
+                    <div class="item">
+                        Likes received
+                        <div class="ui label">{{ profile.get_likes_recieved_no }}</div>
+                    </div>
+                    <div class="item">
+                        Subs
+                        <div class="ui label">{{ profile.get_subs_cnt }}</div>
+                    </div>
+                </div>
+
+                <form action="{% url 'profiles:profile-subscribe' profile.id %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="profile_id" value={{ profile.id }}>
+                                 {% if profile in request.user.get_subscriptions %}
+                                    <button class="ui button fluid">Unfollow</button>
+                                {% else %}
+                                    <button class="ui button blue fluid">Follow</button>
+                                {% endif %}
+                </form>
+            </div>
+            <div class="twelve wide column">
+                {% if profile.get_posts_cnt %}
+                 <div class="ui cards">
+                    {% for post in profile.get_posts %}
+                          <div class="card">
+                            <div class="content">
+                              <div class="header">{{ post.title }}</div>
+
+                            </div>
+
+                            <a href="{% url 'posts:post-detail' post.pk %}" class="ui bottom attached button">
+                              <i class="linkify icon"></i>
+                             View post
+                            </a>
+                          </div>
+
+                    {% endfor %}
+                     </div>
+                {% else %}
+                    <h1>No posts of this user ...</h1>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
