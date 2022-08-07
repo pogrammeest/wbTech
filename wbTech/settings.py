@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django_summernote',
     'easy_thumbnails',
     'image_cropping',
+    'drf_yasg',
     'posts',
     'profiles',
     'api',

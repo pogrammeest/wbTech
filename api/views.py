@@ -16,12 +16,16 @@ from django.db import connection
 
 class ProfileViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows profiles to be viewed or edited.
+    API endpoint that allows profiles to be created, read, updated or deleted.
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+    http_method_names = ['get', 'post', 'head', 'put', 'delete']
 
     def list(self, request):
+        """
+        List of all profiles.
+        """
         ordering = self.request.query_params.get('ordering', None)
         reverse = True if ordering == 'posts' else (False if ordering == '-posts' else None)
 
@@ -33,12 +37,18 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='related-info')
     def get_related_info(self, request, pk=None):
+        """
+        Endpoint that give info about subscriptions, subscribers, posts and liked posts.
+        """
         profile = self.get_object()
         serializer = RelatedProfileInfoSerializer(profile, many=False, context={"request": request})
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post', 'get'], url_path='sub-unsub')
+    @action(detail=True, methods=['get'], url_path='sub-unsub')
     def sub_unsub(self, request, pk=None):
+        """
+            Endpoint that allow to subscribe and unsubscribe
+        """
         user = request.user
         profile = self.get_object()
 
@@ -62,8 +72,32 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
+    """
+        API endpoint that allows pro to be created, read, updated or deleted.
+    """
+
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    http_method_names = ['get', 'post', 'head', 'put', 'delete']
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            title=("Create post"),
+            type=openapi.TYPE_OBJECT,
+            required=['title', 'content'],
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
+                                        ),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
+                                          example=('string'), ),
+                'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
+                                            description=('Author id, available only for staff user'),
+                                            example=(1)),
+            }
+        )
+    )
+    def create(self, request):
+        return super(PostViewSet, self).create(request)
 
     def get_permissions(self):
         if self.action == 'update':
@@ -74,9 +108,13 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class FeedViewSet(viewsets.ModelViewSet):
+    """
+        API endpoint that allow you to get a feed from your subscriptions.
+    """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    http_method_names = ['get']
 
     def list(self, request):
         cursor = connection.cursor()

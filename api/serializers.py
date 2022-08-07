@@ -1,7 +1,12 @@
+import json
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers
 from profiles.models import *
 from posts.models import *
 import re
+
 
 class RelatedProfileInfoSerializer(serializers.HyperlinkedModelSerializer):
     subscriptions = serializers.SerializerMethodField()
@@ -93,13 +98,14 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
-    author = ProfileSerializer(many=False, read_only=True)
+    author = ProfileSerializer(read_only=True, required=False)
     author_id = serializers.IntegerField(write_only=True, required=False)
     id = serializers.HyperlinkedIdentityField(view_name="api:post-detail")
 
     def get_validation_exclusions(self):
         exclusions = super(PostSerializer, self).get_validation_exclusions()
         return exclusions + ['author']
+
 
     def create(self, validated_data):
         user = self.context.get('request').user
@@ -116,5 +122,6 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'title', 'content', 'updated', 'created', 'author', 'author_id']
         read_only_fields = ('id', 'author')
         extra_kwargs = {
+            'author': {'read_only': True},
             'author_id': {'write_only': True}
         }
