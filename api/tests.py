@@ -79,9 +79,6 @@ class ProfileViewSetTestCase(APITestCase):
         self.assertEqual(response.data['is_staff'], temp_user.is_staff)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # self.assertEqual(response.data['subscriptions_count'], temp_user.get_subscriptions_cnt())
-        # self.assertEqual(response.data['liked_posts_count'], temp_user.get_subscriptions_cnt())
-
     def test_user_post_create_get_and_ordering(self):
         user_pool = Profile.objects.all()[:3]
         data = [{

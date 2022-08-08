@@ -59,6 +59,4 @@ class Profile(AbstractUser):
         if not self.slug:
             self.slug = slugify(str(self.username) + '-' + str(uuid.uuid4())[:8].replace('-', ''))
 
-        # self.set_password(self.password)
-
         super().save(*args, **kwargs)

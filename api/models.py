@@ -18,9 +18,6 @@ class UserManager(BaseUserManager):
                                 **extra_fields)
         user.set_password(password)
         user.save()
-
-        user.set_password(password)
-        user.save(using=self._db)
         return user
 
     def create_user(self, username, email, first_name, last_name, password):

@@ -8,9 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 
 
-# Create your views here.
-
-
 def post_mixin(request, only_feed: bool):
     user = request.user
     if only_feed:

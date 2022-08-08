@@ -41,6 +41,6 @@ def subscribe_unsubscribe(request, slug):
 
 @login_required
 def profiles_list_view(request):
-    porfiles = Profile.objects.all()
+    profiles = Profile.objects.all()
 
-    return render(request, 'profiles/profile-list.html', {'porfiles': porfiles})
+    return render(request, 'profiles/profile-list.html', {'profiles': profiles})

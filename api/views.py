@@ -46,7 +46,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='related-info')
     def get_related_info(self, request, pk=None):
         """
-        Endpoint that give info about subscriptions, subscribers, posts and liked posts.
+            Endpoint that give info about subscriptions, subscribers, posts and liked posts.
         """
         profile = self.get_object()
         serializer = RelatedProfileInfoSerializer(profile, many=False, context={"request": request})
@@ -79,6 +79,26 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission]
 
 
+post_swagger = swagger_auto_schema(request_body=openapi.Schema(
+    title=("Create post"),
+    type=openapi.TYPE_OBJECT,
+    required=['title', 'content'],
+    properties={
+        'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
+                                title='Title'
+                                ),
+        'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
+                                  example=('string'), title='Content'),
+        'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
+                                    description=('Author id, available only for staff user'),
+                                    example=(1), title='Author id'),
+    }
+)
+)
+
+
+@method_decorator(name="create", decorator=post_swagger)
+@method_decorator(name="update", decorator=post_swagger)
 class PostViewSet(viewsets.ModelViewSet):
     """
         API endpoint that allows pro to be created, read, updated or deleted.
@@ -88,43 +108,9 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     http_method_names = ['get', 'post', 'head', 'put', 'delete']
 
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            title=("Create post"),
-            type=openapi.TYPE_OBJECT,
-            required=['title', 'content'],
-            properties={
-                'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
-                                        title='Title'
-                                        ),
-                'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
-                                          example=('string'), title='Content'),
-                'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
-                                            description=('Author id, available only for staff user'),
-                                            example=(1), title='Author id'),
-            }
-        )
-    )
     def create(self, request):
         return super(PostViewSet, self).create(request)
 
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            title=("Create post"),
-            type=openapi.TYPE_OBJECT,
-            required=['title', 'content'],
-            properties={
-                'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
-                                        title='Title'
-                                        ),
-                'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
-                                          example=('string'), title='Content'),
-                'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
-                                            description=('Author id, available only for staff user'),
-                                            example=(1), title='Author id'),
-            }
-        )
-    )
     def update(self, request, pk=None):
         return super(PostViewSet, self).update(request, pk)
 
@@ -149,8 +135,7 @@ class FeedViewSet(viewsets.ModelViewSet):
         q = Post.objects.filter(author__in=request.user.subs.all())
         paginator = PageNumberPagination()
         paginator.page_size = 10
+
         result_page = paginator.paginate_queryset(q, request)
-
         serializer = PostSerializer(result_page, many=True, context={"request": request})
-
         return paginator.get_paginated_response(serializer.data)
