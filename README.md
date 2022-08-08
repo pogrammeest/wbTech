@@ -21,11 +21,19 @@
     python manage.py makemigrations
     python manage.py migrate
     
-##### 6) Создайте суперпользователя
+##### 6) Создайте суперпользователя (Опционально)
 
     python manage.py createsuperuser
+
+##### 7) Заполните бд (Опционально)
+
+    python manage.py loaddata fixtures/profiles.json --app profiles.Profile
+    python manage.py loaddata fixtures/posts.json --app posts.Post
+    python manage.py loaddata fixtures/сomment.json --app posts.Comment
+    python manage.py loaddata fixtures/like.json --app posts.Like
+
     
-##### 7) Запустите сервер
+##### 8) Запустите сервер
 
     python manage.py runserver
 
