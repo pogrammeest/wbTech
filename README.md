@@ -18,7 +18,8 @@
 
 ##### 5) Выполните команду для выполнения миграций
 
-    python manage.py deploy
+    python manage.py makemigrations
+    python manage.py migrate
     
 ##### 6) Создайте суперпользователя
 
