@@ -29,7 +29,7 @@
 
     python manage.py loaddata fixtures/profiles.json --app profiles.Profile
     python manage.py loaddata fixtures/posts.json --app posts.Post
-    python manage.py loaddata fixtures/сomment.json --app posts.Comment
+    python manage.py loaddata fixtures/comment.json --app posts.Comment
     python manage.py loaddata fixtures/like.json --app posts.Like
 
     
