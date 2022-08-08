@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -14,6 +15,13 @@ from rest_framework import viewsets, filters
 from django.db import connection
 
 
+@method_decorator(name="list", decorator=swagger_auto_schema(manual_parameters=[
+    openapi.Parameter("ordering",
+                      openapi.IN_QUERY,
+                      description="Source reference",
+                      type=openapi.TYPE_STRING, enum=['posts', '-posts']
+                      )
+]))
 class ProfileViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows profiles to be created, read, updated or deleted.
@@ -87,17 +95,38 @@ class PostViewSet(viewsets.ModelViewSet):
             required=['title', 'content'],
             properties={
                 'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
+                                        title='Title'
                                         ),
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
-                                          example=('string'), ),
+                                          example=('string'), title='Content'),
                 'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
                                             description=('Author id, available only for staff user'),
-                                            example=(1)),
+                                            example=(1), title='Author id'),
             }
         )
     )
     def create(self, request):
         return super(PostViewSet, self).create(request)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            title=("Create post"),
+            type=openapi.TYPE_OBJECT,
+            required=['title', 'content'],
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description=('Title of post'), example=('string'),
+                                        title='Title'
+                                        ),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description=('Content of post'),
+                                          example=('string'), title='Content'),
+                'author_id': openapi.Schema(type=openapi.TYPE_INTEGER,
+                                            description=('Author id, available only for staff user'),
+                                            example=(1), title='Author id'),
+            }
+        )
+    )
+    def update(self, request, pk=None):
+        return super(PostViewSet, self).update(request, pk)
 
     def get_permissions(self):
         if self.action == 'update':
@@ -117,7 +146,6 @@ class FeedViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
 
     def list(self, request):
-        cursor = connection.cursor()
         q = Post.objects.filter(author__in=request.user.subs.all())
         paginator = PageNumberPagination()
         paginator.page_size = 10

@@ -28,3 +28,12 @@
 
     python manage.py runserver
 
+
+## Приложение работает на:
+    http://localhost:8000
+
+##### Документация к api находится по пути 
+    http://localhost:8000/swagger/
+
+##### Api находится по пути 
+    http://localhost:8000/api/

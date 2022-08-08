@@ -97,15 +97,26 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
             self.fields['id'] = serializers.IntegerField()
 
 
+class PostInfoProfileSerializer(serializers.HyperlinkedModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
+
+    def get_avatar_url(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.avatar.url)
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'username', 'avatar_url', 'slug']
+
+
 class PostSerializer(serializers.HyperlinkedModelSerializer):
-    author = ProfileSerializer(read_only=True, required=False)
+    author = PostInfoProfileSerializer(read_only=True, required=False)
     author_id = serializers.IntegerField(write_only=True, required=False)
     id = serializers.HyperlinkedIdentityField(view_name="api:post-detail")
 
     def get_validation_exclusions(self):
         exclusions = super(PostSerializer, self).get_validation_exclusions()
         return exclusions + ['author']
-
 
     def create(self, validated_data):
         user = self.context.get('request').user
