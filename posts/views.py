@@ -88,7 +88,7 @@ def post_detail(request, pk):
 class PostDeleteView(DeleteView):
     model = Post
     template_name = 'posts/confirm_del.html'
-    success_url = reverse_lazy('posts:main-post-view')
+    success_url = reverse_lazy('posts:all-post-view')
 
     def get_object(self, *args, **kwargs):
         pk = self.kwargs.get('pk')
@@ -102,7 +102,7 @@ class PostUpdateView(UpdateView):
     form_class = PostModelForm
     model = Post
     template_name = 'posts/update.html'
-    success_url = reverse_lazy('posts:main-post-view')
+    success_url = reverse_lazy('posts:all-post-view')
 
     def form_valid(self, form):
         user = self.request.user
