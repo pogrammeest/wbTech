@@ -103,7 +103,6 @@ class PostViewSet(viewsets.ModelViewSet):
     """
         API endpoint that allows pro to be created, read, updated or deleted.
     """
-
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     http_method_names = ['get', 'post', 'head', 'put', 'delete']
@@ -129,6 +128,7 @@ class FeedViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get']
 
     def list(self, request):
@@ -139,3 +139,4 @@ class FeedViewSet(viewsets.ModelViewSet):
         result_page = paginator.paginate_queryset(q, request)
         serializer = PostSerializer(result_page, many=True, context={"request": request})
         return paginator.get_paginated_response(serializer.data)
+
