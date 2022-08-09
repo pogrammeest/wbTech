@@ -1,7 +1,5 @@
 from django.utils.decorators import method_decorator
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets, permissions
+from rest_framework import status, permissions
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -11,6 +9,7 @@ from .docs import *
 from .models import *
 from .serializers import *
 from rest_framework import viewsets
+from django.db.models import Q
 
 
 @method_decorator(name="list", decorator=account_list)
@@ -61,22 +60,42 @@ class AccountViewSet(viewsets.ModelViewSet):
         serializer = RelatedAccountInfoSerializer(profile, many=False, context={"request": request})
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'], url_path='sub-unsub')
-    def sub_unsub(self, request, pk=None):
+    @action(detail=True, methods=['get'], url_path='sub')
+    def sub(self, request, pk=None):
         """
-            Endpoint that allow to subscribe and unsubscribe
+            Endpoint that allow to subscribe to user
+        """
+        user = request.user
+        profile = self.get_object()
+
+        if profile not in user.get_subscriptions():
+            user.subs.add(profile)
+            user.save()
+            message = f'Successfully subscribed to user: {profile.username}.'
+            sta = status.HTTP_200_OK
+        else:
+            message = f'You are already subscribed to user: {profile.username}.'
+            sta = status.HTTP_400_BAD_REQUEST
+
+        return Response({'message': message}, status=sta)
+
+    @action(detail=True, methods=['get'], url_path='unsub')
+    def unsub(self, request, pk=None):
+        """
+            Endpoint that allow to unsubscribe to user
         """
         user = request.user
         profile = self.get_object()
 
         if profile in user.get_subscriptions():
             user.subs.remove(profile)
+            user.save()
             message = f'Successfully unsubscribed to user: {profile.username}.'
+            sta = status.HTTP_200_OK
         else:
-            user.subs.add(profile)
-            message = f'Successfully subscribed to user: {profile.username}.'
-        user.save()
-        return Response({'message': message}, status=status.HTTP_200_OK)
+            message = f"You haven't subscribed to {profile.username} account yet."
+            sta = status.HTTP_400_BAD_REQUEST
+        return Response({'message': message}, status=sta)
 
     def get_permissions(self):
         if self.action in ['create', 'login']:
@@ -120,19 +139,60 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='unlike')
     def unlike(self, request, pk=None):
         """
-            Endpoint that allow to like post
+            Endpoint that allow to unlike post
         """
         user = request.user
         post = self.get_object()
         if user in post.liked.all():
             post.liked.remove(user)
-
         like, created = Like.objects.get_or_create(user=user, post_id=post.pk)
         if not created:
             post.save()
             like.save()
         message = f'Successfully unliked to post: {post.title}.'
         return Response({'message': message}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'], url_path='make-as-read')
+    def make_as_read(self, request, pk=None):
+        """
+            Endpoint that allow to make post as read
+        """
+        user = request.user
+        pk = int(pk)
+        list_of_id = tuple(Post.objects.all().values_list('pk', flat=True))
+
+        if pk not in list_of_id:
+            return Response({'message': f'Post with id = {pk} not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if pk not in user.already_seen_posts:
+            user.already_seen_posts.append(pk)
+            user.save()
+            message = f'The post {pk} has been successfully marked as read.'
+            sta = status.HTTP_200_OK
+        else:
+            message = f'Post {pk} already marked as read.'
+            sta = status.HTTP_400_BAD_REQUEST
+        return Response({'message': message}, status=sta)
+
+    @action(detail=True, methods=['get'], url_path='make-as-unread')
+    def make_as_unread(self, request, pk=None):
+        """
+            Endpoint that allow to make post as unread
+        """
+        pk = int(pk)
+        list_of_id = tuple(Post.objects.all().values_list('pk', flat=True))
+        user = request.user
+
+        if pk not in list_of_id:
+            return Response({'message': f'Post with id = {pk} not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if pk in user.already_seen_posts:
+            user.already_seen_posts.remove(pk)
+            user.save()
+            message = f'The post {pk} has been successfully marked as unread.'
+            sta = status.HTTP_200_OK
+        else:
+            message = f'Post {pk} already marked as unread.'
+            sta = status.HTTP_400_BAD_REQUEST
+        return Response({'message': message}, status=sta)
 
     def get_permissions(self):
         if self.action in ['update', 'delete']:
@@ -142,6 +202,7 @@ class PostViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission]
 
 
+@method_decorator(name="list", decorator=feed_list)
 class FeedViewSet(viewsets.ModelViewSet):
     """
         API endpoint that allow you to get a feed from your subscriptions.
@@ -153,7 +214,15 @@ class FeedViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
 
     def list(self, request):
-        q = Post.objects.filter(author__in=request.user.subs.all())
+        read_only = self.request.query_params.get('read_only', None)
+        parametr = True if read_only == 'true' else None
+
+        if parametr:
+            q = Post.objects.filter(
+                Q(author__in=request.user.subs.all()) & ~Q(pk__in=request.user.already_seen_posts)
+            )
+        else:
+            q = Post.objects.filter(Q(author__in=request.user.subs.all()))
         paginator = PageNumberPagination()
         paginator.page_size = 10
 

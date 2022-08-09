@@ -113,14 +113,13 @@ class AccountViewSetTestCase(APITestCase):
 
     def test_sub_un_sub_and_feed(self):
         # Authorized users subscribe and unsubscribe to other users' posts.
-
         self.api_authentication(user=None)
-        response = self.client.get(reverse("api:account-sub-unsub", kwargs={'pk': self.user.pk}))
+        response = self.client.get(reverse("api:account-sub", kwargs={'pk': self.user.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.api_authentication(self.user)
         response = self.client.get(
-            reverse("api:account-sub-unsub", kwargs={'pk': Account.objects.get(username='user2').pk}))
+            reverse("api:account-sub", kwargs={'pk': Account.objects.get(username='user2').pk}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -132,8 +131,8 @@ class AccountViewSetTestCase(APITestCase):
                     'content': f'cotent of {user.username}'
                 })
 
-        self.client.get(reverse("api:account-sub-unsub", kwargs={'pk': Account.objects.get(username='user4').pk}))
-        self.client.get(reverse("api:account-sub-unsub", kwargs={'pk': Account.objects.get(username='user5').pk}))
+        self.client.get(reverse("api:account-sub", kwargs={'pk': Account.objects.get(username='user4').pk}))
+        self.client.get(reverse("api:account-sub", kwargs={'pk': Account.objects.get(username='user5').pk}))
 
         # For authorized users to form a feed from the posts of users to which a subscription has been made. New
         # posts of users get into the feed after the subscription is completed. Sort by post creation date,
@@ -167,3 +166,26 @@ class AccountViewSetTestCase(APITestCase):
 
         response = self.client.get(reverse('api:post-detail', kwargs={'pk': post.pk}))
         self.assertEqual(response.data['like_count'], 3)
+
+    def test_post_make_as_read(self):
+        temp_user = Account.objects.get(username='user7')
+        post_id = []
+        for i in range(6):
+            post = Post.objects.create(title=f'Title {i}', content=f'content {i}', author=temp_user)
+            post_id.append(post.pk)
+
+        self.client.get(reverse("api:account-sub", kwargs={'pk': temp_user.pk}))
+
+        response = self.client.get(reverse("api:feed-list"))
+        self.assertEqual(len(response.data['results']), 6)
+
+        for i in range(3):
+            self.client.get(reverse("api:post-make-as-read", kwargs={'pk': post_id[i]}))
+
+        response = self.client.get(f'{reverse("api:feed-list")}?read_only=true')
+        self.assertEqual(len(response.data['results']), 3)
+        self.assertEqual(response.data['count'], 3)
+        self.client.get(reverse("api:post-make-as-unread", kwargs={'pk': post_id[0]}))
+        response = self.client.get(f'{reverse("api:feed-list")}?read_only=true')
+        self.assertEqual(len(response.data['results']), 4)
+        self.assertEqual(response.data['count'], 4)

@@ -4,8 +4,16 @@ from drf_yasg.utils import swagger_auto_schema
 account_list = swagger_auto_schema(manual_parameters=[
     openapi.Parameter("ordering",
                       openapi.IN_QUERY,
-                      description="Source reference",
+                      description="Ordering of accounts",
                       type=openapi.TYPE_STRING, enum=['posts', '-posts']
+                      )
+])
+
+feed_list = swagger_auto_schema(manual_parameters=[
+    openapi.Parameter("read_only",
+                      openapi.IN_QUERY,
+                      description="Filter by re read only",
+                      type=openapi.TYPE_STRING, enum=['true']
                       )
 ])
 

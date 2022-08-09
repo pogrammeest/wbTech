@@ -99,13 +99,9 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
     author_id = serializers.IntegerField(write_only=True, required=False)
     id = serializers.HyperlinkedIdentityField(view_name="api:post-detail")
     like_count = serializers.SerializerMethodField()
-    comment_count = serializers.SerializerMethodField()
 
     def get_like_count(self, obj):
         return obj.num_likes()
-
-    def get_comment_count(self, obj):
-        return obj.num_comments()
 
     def get_validation_exclusions(self):
         exclusions = super(PostSerializer, self).get_validation_exclusions()
@@ -123,9 +119,9 @@ class PostSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'updated', 'created', 'author', 'author_id', 'comment_count',
+        fields = ['id', 'title', 'content', 'updated', 'created', 'author', 'author_id',
                   'like_count']
-        read_only_fields = ('id', 'author', 'comment_count', 'like_count')
+        read_only_fields = ('id', 'author', 'like_count')
         extra_kwargs = {
             'author': {'read_only': True},
             'author_id': {'write_only': True}
