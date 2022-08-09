@@ -12,7 +12,7 @@ class RelatedAccountInfoSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_liked_posts(self, obj):
         return [self.context.get('request').build_absolute_uri(f'/api/post/{inst.post.pk}/') for inst in
-                obj.liked_posts()]
+                obj.get_liked_posts()]
 
     def get_sub_mixin(self, func):
         return [self.context.get('request').build_absolute_uri(f'/api/account/{inst.pk}/') for inst in func()]
