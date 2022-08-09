@@ -46,7 +46,7 @@
 
     python manage.py createsuperuser
 
-##### 8) Запустите сервер
+##### 7) Запустите сервер
 
     python manage.py runserver
 
