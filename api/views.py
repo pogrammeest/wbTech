@@ -24,7 +24,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """
-        List of all profiles.
+        List of all accounts.
         """
         ordering = self.request.query_params.get('ordering', None)
         reverse = True if ordering == 'posts' else (False if ordering == '-posts' else None)
@@ -38,7 +38,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='login')
     def login(self, request):
         """
-            Endpoint that give info about subscriptions, subscribers, posts and liked posts.
+            API endpoint that allows you to login
         """
         username = request.data.get("username")
         password = request.data.get("password")
@@ -63,7 +63,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='sub')
     def sub(self, request, pk=None):
         """
-            Endpoint that allow to subscribe to user
+            Endpoint that allow to subscribe to account
         """
         user = request.user
         profile = self.get_object()
@@ -82,7 +82,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='unsub')
     def unsub(self, request, pk=None):
         """
-            Endpoint that allow to unsubscribe to user
+            Endpoint that allow to unsubscribe to account
         """
         user = request.user
         profile = self.get_object()
@@ -111,7 +111,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 @method_decorator(name="update", decorator=post_swagger)
 class PostViewSet(viewsets.ModelViewSet):
     """
-        API endpoint that allows pro to be created, read, updated or deleted.
+        API endpoint that allows posts to be created, read, updated or deleted.
     """
     queryset = Post.objects.all()
     serializer_class = PostSerializer

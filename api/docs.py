@@ -12,7 +12,7 @@ account_list = swagger_auto_schema(manual_parameters=[
 feed_list = swagger_auto_schema(manual_parameters=[
     openapi.Parameter("read_only",
                       openapi.IN_QUERY,
-                      description="Filter by re read only",
+                      description="Filter by read only",
                       type=openapi.TYPE_STRING, enum=['true']
                       )
 ])
