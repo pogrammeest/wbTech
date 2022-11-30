@@ -13,9 +13,13 @@ def post_mixin(request, only_feed: bool):
     if only_feed:
         cursor = connection.cursor()
         cursor.execute(
-            f'''select * from posts_post post join profiles_profile_subs on to_profile_id = post.author_id where from_profile_id = {request.user.pk}''')
+            f'''
+            select * from posts_post post join profiles_profile_subs 
+            on to_profile_id = post.author_id 
+            where from_profile_id = {request.user.id}
+            ''')
         current_id = [obj[0] for obj in cursor.fetchall()]
-        posts = Post.objects.filter(pk__in=current_id)
+        posts = Post.objects.filter(pk__in=current_id) | Post.objects.filter(author__in=[request.user.boss, request.user])
     else:
         posts = Post.objects.all()
     post_form = PostModelForm()

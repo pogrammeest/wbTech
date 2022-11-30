@@ -75,6 +75,12 @@
                             <td>bio</td>
                             <td>{{ user.bio }}</td>
                         </tr>
+
+                        <tr>
+                            <td>boss</td>
+                            <td><a href="{% url 'profiles:profile-detail' user.boss.slug %}">{{ user.boss.first_name }} {{ user.boss.last_name }}</a></td>
+
+                        </tr>
                         <tr>
                             <td>Number of subscriptions</td>
                             <td>{{ user.get_subscriptions_cnt }}</td>

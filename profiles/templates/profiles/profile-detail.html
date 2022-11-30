@@ -12,7 +12,13 @@
                 {% load cropping %}
 
                 <img class="ui medium rounded image" src="{% cropped_thumbnail profile "cropping" %}">
-                <h1>{{ profile.get_full_name }}</h1>
+                <h1>{{ profile.get_full_name }}
+                    {% if profile.role == "HOD" %}
+                        <a class="ui yellow image label inline-flex">
+                            <img src="https://semantic-ui.com/images/avatar/small/christian.jpg">Начальник</a>
+                    {% endif %}
+                </h1>
+
                 <div class="ui vertical fluid menu">
                     <div class="item">
                         Posts
@@ -33,33 +39,35 @@
                 </div>
 
                 <form action="{% url 'profiles:profile-subscribe' profile.id %}" method="POST">
-                                {% csrf_token %}
-                                <input type="hidden" name="profile_id" value={{ profile.id }}>
-                                 {% if profile in request.user.get_subscriptions %}
-                                    <button class="ui button fluid">Unfollow</button>
-                                {% else %}
-                                    <button class="ui button blue fluid">Follow</button>
-                                {% endif %}
+                    {% csrf_token %}
+                    <input type="hidden" name="profile_id" value={{ profile.id }}>
+                    {% if profile.role == "HOD" %}
+                        <button class="ui button disabled fluid">Unfollow</button>
+                    {% elif profile in request.user.get_subscriptions %}
+                        <button class="ui button fluid">Unfollow</button>
+                    {% else %}
+                        <button class="ui button blue fluid">Follow</button>
+                    {% endif %}
                 </form>
             </div>
             <div class="twelve wide column">
                 {% if profile.get_posts_cnt %}
-                 <div class="ui cards">
-                    {% for post in profile.get_posts %}
-                          <div class="card">
-                            <div class="content">
-                              <div class="header">{{ post.title }}</div>
+                    <div class="ui cards">
+                        {% for post in profile.get_posts %}
+                            <div class="card">
+                                <div class="content">
+                                    <div class="header">{{ post.title }}</div>
 
+                                </div>
+
+                                <a href="{% url 'posts:post-detail' post.pk %}" class="ui bottom attached button">
+                                    <i class="linkify icon"></i>
+                                    View post
+                                </a>
                             </div>
 
-                            <a href="{% url 'posts:post-detail' post.pk %}" class="ui bottom attached button">
-                              <i class="linkify icon"></i>
-                             View post
-                            </a>
-                          </div>
-
-                    {% endfor %}
-                     </div>
+                        {% endfor %}
+                    </div>
                 {% else %}
                     <h1>No posts of this user ...</h1>
                 {% endif %}
